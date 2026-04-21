@@ -4,7 +4,7 @@ FROM golang:1.21-alpine AS builder
 WORKDIR /app
 
 # Copy go mod and sum files
-COPY go.mod ./
+COPY go.mod go.sum ./
 
 # Download dependencies
 RUN go mod download
@@ -18,6 +18,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o securemcp cmd/securemcp/main.go
 # Final stage
 FROM alpine:latest
 
+# Install ca-certificates for HTTPS requests
+RUN apk --no-cache add ca-certificates
+
 WORKDIR /app
 
 # Copy the binary from builder
@@ -27,4 +30,4 @@ COPY --from=builder /app/securemcp .
 EXPOSE 8080
 
 # Run the application
-CMD ["./securemcp", "server"] 
+CMD ["./securemcp", "server"]
